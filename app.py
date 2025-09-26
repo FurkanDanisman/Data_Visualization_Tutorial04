@@ -123,8 +123,8 @@ if not df.empty:
     ax.set_axisbelow(True)
     
     # Customize tick labels with much larger fonts
-    ax.tick_params(axis='x', labelsize=30, colors='#2C3E50')
-    ax.tick_params(axis='y', labelsize=30, colors='#2C3E50')
+    ax.tick_params(axis='x', labelsize=34, colors='#2C3E50')
+    ax.tick_params(axis='y', labelsize=34, colors='#2C3E50')
     
     # Set y-axis ticks to only show integers 0, 1, 2, 3, 4
     ax.set_yticks([0, 1, 2, 3, 4])
