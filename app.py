@@ -18,7 +18,7 @@ if not os.path.exists(DATA_FILE):
 # Load existing data
 df = pd.read_csv(DATA_FILE)
 
-st.title("I am a TA today!")
+st.title("I am a TA todady!")
 st.markdown("---")
 
 # Input form with improved layout
