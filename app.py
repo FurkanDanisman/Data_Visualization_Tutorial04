@@ -43,9 +43,9 @@ with col1:
     )
     
     other = st.number_input(
-        "🔧 Other (0-1)", 
-        min_value=0, max_value=1, value=0,
-        help="Rate from 0 to 1"
+        "🔧 Other (0, 0.5, or 1)", 
+        min_value=0.0, max_value=1.0, value=0.0, step=0.5,
+        help="Rate: 0, 0.5, or 1"
     )
 
 with col2:
