@@ -25,7 +25,7 @@ st.markdown("---")
 col1, col2 = st.columns([2, 1])
 
 with col1:
-    name = st.text_input("👤 Enter your nicknssame", placeholder="Your name here...")
+    name = st.text_input("👤 Enter your nickname", placeholder="Your name here...")
     
     st.markdown("### 📊 Enter your values:")
     
