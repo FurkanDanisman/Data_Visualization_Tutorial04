@@ -18,7 +18,7 @@ if not os.path.exists(DATA_FILE):
 # Load existing data
 df = pd.read_csv(DATA_FILE)
 
-st.title("I am a TA todady!")
+st.title("I am a TA today!")
 st.markdown("---")
 
 # Input form with improved layout
@@ -111,9 +111,9 @@ if not df.empty:
                   zorder=3)
     
     # Customize the plot appearance with MUCH larger fonts
-    ax.set_ylabel('Average Grade', fontsize=28, fontweight='bold', color='#2C3E50')
+    ax.set_ylabel('Average Grade', fontsize=34, fontweight='bold', color='#2C3E50')
     ax.set_title('Do students grade similar to TAs?', 
-                fontsize=36, fontweight='bold', color='#2C3E50', pad=30)
+                fontsize=40, fontweight='bold', color='#2C3E50', pad=30)
     
     # Set y-axis to show only integer values from 0 to 4
     ax.set_ylim(0, 4.5)
