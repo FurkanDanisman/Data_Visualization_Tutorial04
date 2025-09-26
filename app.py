@@ -25,7 +25,7 @@ st.markdown("---")
 col1, col2 = st.columns([2, 1])
 
 with col1:
-    name = st.text_input("👤 Enter your name", placeholder="Your name here...")
+    name = st.text_input("👤 Enter your nickname", placeholder="Your name here...")
     
     st.markdown("### 📊 Enter your values:")
     
@@ -112,7 +112,7 @@ if not df.empty:
     
     # Customize the plot appearance with MUCH larger fonts
     ax.set_ylabel('Average Grade', fontsize=28, fontweight='bold', color='#2C3E50')
-    ax.set_title('Do students grade similar to TA?', 
+    ax.set_title('Do students grade similar to TAs?', 
                 fontsize=36, fontweight='bold', color='#2C3E50', pad=30)
     
     # Set y-axis to show only integer values from 0 to 4
