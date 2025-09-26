@@ -78,7 +78,7 @@ if not df.empty:
     avg_other = df["Other"].mean()
     
     # Create a beautiful plot with larger size for better readability
-    fig, ax = plt.subplots(figsize=(22, 14))
+    fig, ax = plt.subplots(figsize=(16, 10))
     
     # Define categories and values
     categories = ["Visualization design", "Write-up", "Other"]
