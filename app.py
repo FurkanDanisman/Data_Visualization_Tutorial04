@@ -18,7 +18,7 @@ if not os.path.exists(DATA_FILE):
 # Load existing data
 df = pd.read_csv(DATA_FILE)
 
-st.title("🎨 Collaborative Bar Plot App")
+st.title("I am a TA today!")
 st.markdown("---")
 
 # Input form with improved layout
@@ -111,8 +111,8 @@ if not df.empty:
                   zorder=3)
     
     # Customize the plot appearance with MUCH larger fonts
-    ax.set_ylabel('Average Score', fontsize=28, fontweight='bold', color='#2C3E50')
-    ax.set_title('📊 Average Scores from All Submissions', 
+    ax.set_ylabel('Average Grade', fontsize=28, fontweight='bold', color='#2C3E50')
+    ax.set_title('Do students grade similar to TA?', 
                 fontsize=36, fontweight='bold', color='#2C3E50', pad=30)
     
     # Set y-axis to show only integer values from 0 to 4
@@ -123,8 +123,8 @@ if not df.empty:
     ax.set_axisbelow(True)
     
     # Customize tick labels with much larger fonts
-    ax.tick_params(axis='x', labelsize=22, colors='#2C3E50')
-    ax.tick_params(axis='y', labelsize=22, colors='#2C3E50')
+    ax.tick_params(axis='x', labelsize=30, colors='#2C3E50')
+    ax.tick_params(axis='y', labelsize=30, colors='#2C3E50')
     
     # Set y-axis ticks to only show integers 0, 1, 2, 3, 4
     ax.set_yticks([0, 1, 2, 3, 4])
@@ -181,8 +181,8 @@ else:
     fig, ax = plt.subplots(figsize=(16, 10))
     categories = ["Visualization design", "Write-up", "Other"]
     ax.bar(categories, [0, 0, 0], color=['#FF6B6B', '#4ECDC4', '#45B7D1'], alpha=0.3)
-    ax.set_ylabel('Average Score', fontsize=28, fontweight='bold')
-    ax.set_title('📊 Average Scores from All Submissions', fontsize=36, fontweight='bold', pad=30)
+    ax.set_ylabel('Average Grade', fontsize=40, fontweight='bold')
+    ax.set_title('Do students grade similar to TAs?', fontsize=50, fontweight='bold', pad=30)
     ax.set_ylim(0, 4.5)
     ax.grid(True, axis='y', alpha=0.3)
     ax.set_yticks([0, 1, 2, 3, 4])
