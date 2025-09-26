@@ -77,8 +77,8 @@ if not df.empty:
     avg_writeup = df["Write-up"].mean() 
     avg_other = df["Other"].mean()
     
-    # Create a beautiful plot
-    fig, ax = plt.subplots(figsize=(12, 8))
+    # Create a beautiful plot with larger size for better readability
+    fig, ax = plt.subplots(figsize=(16, 10))
     
     # Define categories and values
     categories = ["Visualization design", "Write-up", "Other"]
@@ -90,14 +90,14 @@ if not df.empty:
     
     # Create bars with enhanced styling
     bars = ax.bar(categories, values, color=colors, alpha=0.8, 
-                  edgecolor='white', linewidth=2)
+                  edgecolor='white', linewidth=3)
     
-    # Add value labels on top of bars
+    # Add value labels on top of bars with much larger font
     for i, (bar, value) in enumerate(zip(bars, values)):
         height = bar.get_height()
-        ax.text(bar.get_x() + bar.get_width()/2., height + 0.05,
+        ax.text(bar.get_x() + bar.get_width()/2., height + 0.1,
                 f'{value:.2f}', ha='center', va='bottom', 
-                fontsize=14, fontweight='bold', color='#2C3E50')
+                fontsize=24, fontweight='bold', color='#2C3E50')
     
     # Add individual data points as scatter plot overlay
     for i, category in enumerate(categories):
@@ -106,43 +106,36 @@ if not df.empty:
         # Add some jitter for better visibility
         x_jitter = x_positions + np.random.normal(0, 0.1, len(category_data))
         
-        ax.scatter(x_jitter, category_data, alpha=0.6, s=50, 
-                  color='#34495E', edgecolors='white', linewidth=1,
+        ax.scatter(x_jitter, category_data, alpha=0.6, s=80, 
+                  color='#34495E', edgecolors='white', linewidth=2,
                   zorder=3)
     
-    # Customize the plot appearance
-    ax.set_ylabel('Average Score', fontsize=16, fontweight='bold', color='#2C3E50')
+    # Customize the plot appearance with MUCH larger fonts
+    ax.set_ylabel('Average Score', fontsize=28, fontweight='bold', color='#2C3E50')
     ax.set_title('📊 Average Scores from All Submissions', 
-                fontsize=20, fontweight='bold', color='#2C3E50', pad=20)
+                fontsize=36, fontweight='bold', color='#2C3E50', pad=30)
     
-    # Set y-axis to show appropriate range
-    ax.set_ylim(0, max(max_values) + 0.5)
+    # Set y-axis to show only integer values from 0 to 4
+    ax.set_ylim(0, 4.5)
     
     # Add horizontal grid lines
-    ax.grid(True, axis='y', alpha=0.3, linestyle='-', linewidth=0.5)
+    ax.grid(True, axis='y', alpha=0.3, linestyle='-', linewidth=1)
     ax.set_axisbelow(True)
     
-    # Customize tick labels
-    ax.tick_params(axis='x', labelsize=12, colors='#2C3E50')
-    ax.tick_params(axis='y', labelsize=12, colors='#2C3E50')
+    # Customize tick labels with much larger fonts
+    ax.tick_params(axis='x', labelsize=22, colors='#2C3E50')
+    ax.tick_params(axis='y', labelsize=22, colors='#2C3E50')
     
-    # Add y-axis points/ticks at regular intervals
-    y_ticks = []
-    for max_val in max_values:
-        if max_val == 4:
-            y_ticks.extend([0, 1, 2, 3, 4])
-        elif max_val == 1:
-            y_ticks.extend([0, 0.5, 1])
-    
-    # Remove duplicates and sort
-    y_ticks = sorted(list(set(y_ticks)))
-    ax.set_yticks(y_ticks)
+    # Set y-axis ticks to only show integers 0, 1, 2, 3, 4
+    ax.set_yticks([0, 1, 2, 3, 4])
     
     # Remove top and right spines for cleaner look
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.spines['left'].set_color('#BDC3C7')
+    ax.spines['left'].set_linewidth(2)
     ax.spines['bottom'].set_color('#BDC3C7')
+    ax.spines['bottom'].set_linewidth(2)
     
     # Set background color
     fig.patch.set_facecolor('white')
@@ -184,13 +177,19 @@ if not df.empty:
 
 else:
     st.warning("⚠️ No data available yet. Be the first to submit!")
-    # Show empty plot with proper styling
-    fig, ax = plt.subplots(figsize=(12, 8))
+    # Show empty plot with proper styling and large fonts
+    fig, ax = plt.subplots(figsize=(16, 10))
     categories = ["Visualization design", "Write-up", "Other"]
     ax.bar(categories, [0, 0, 0], color=['#FF6B6B', '#4ECDC4', '#45B7D1'], alpha=0.3)
-    ax.set_ylabel('Average Score', fontsize=16, fontweight='bold')
-    ax.set_title('📊 Average Scores from All Submissions', fontsize=20, fontweight='bold', pad=20)
+    ax.set_ylabel('Average Score', fontsize=28, fontweight='bold')
+    ax.set_title('📊 Average Scores from All Submissions', fontsize=36, fontweight='bold', pad=30)
     ax.set_ylim(0, 4.5)
     ax.grid(True, axis='y', alpha=0.3)
-    ax.set_yticks([0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4])
+    ax.set_yticks([0, 1, 2, 3, 4])
+    ax.tick_params(axis='x', labelsize=22, colors='#2C3E50')
+    ax.tick_params(axis='y', labelsize=22, colors='#2C3E50')
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_linewidth(2)
+    ax.spines['bottom'].set_linewidth(2)
     st.pyplot(fig)
