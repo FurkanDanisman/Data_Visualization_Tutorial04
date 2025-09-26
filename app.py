@@ -99,17 +99,6 @@ if not df.empty:
                 f'{value:.2f}', ha='center', va='bottom', 
                 fontsize=24, fontweight='bold', color='#2C3E50')
     
-    # Add individual data points as scatter plot overlay
-    for i, category in enumerate(categories):
-        category_data = df[category].values
-        x_positions = np.full(len(category_data), i)
-        # Add some jitter for better visibility
-        x_jitter = x_positions + np.random.normal(0, 0.1, len(category_data))
-        
-        ax.scatter(x_jitter, category_data, alpha=0.6, s=80, 
-                  color='#34495E', edgecolors='white', linewidth=2,
-                  zorder=3)
-    
     # Customize the plot appearance with MUCH larger fonts
     ax.set_ylabel('Average Grade', fontsize=34, fontweight='bold', color='#2C3E50')
     ax.set_title('Do students grade similar to TAs?', 
