@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How a Web Page Works</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* layout: one-screen stage. Header with 5 steps, caption, then page (left) and behind-the-scenes (right) */
+  color-scheme: light;
+  --bg:#EEF1F6; --panel:#FFFFFF; --ink:#14213D; --muted:#5B6781; --line:#D5DBE6;
+  --tomato:#E5482D; --basil:#1F8A5B; --violet:#6C5CE7; --exit:#D9730D; --cheese:#FFC93C; --code:#101A33;
+  --display:"Bricolage Grotesque","Trebuchet MS",sans-serif;
+  --body:"Figtree","Segoe UI",Helvetica,Arial,sans-serif;
+  --mono:"JetBrains Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;display:flex;flex-direction:column;gap:12px;padding:16px 20px}
+.ui{font:600 15px var(--body);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:8px 16px;cursor:pointer}
+.ui:hover{border-color:var(--ink)}
+.ui:focus-visible,.sw:focus-visible,.step:focus-visible{outline:3px solid var(--violet);outline-offset:2px}
+.ui:disabled{opacity:.4;cursor:default}
+header{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+header h1{font:700 26px var(--display);margin:0;margin-right:auto}
+.steps{display:flex;gap:6px;flex-wrap:wrap}
+.step{font:600 14px var(--body);color:var(--muted);background:transparent;border:1px solid var(--line);border-radius:999px;padding:7px 14px;cursor:pointer}
+.step b{font-weight:700;margin-right:6px}
+.step.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.step.done{color:var(--ink);border-color:var(--ink)}
+.caption{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 18px;display:flex;gap:6px 18px;align-items:baseline;flex-wrap:wrap}
+.caption strong{font:700 22px var(--display);text-wrap:balance}
+.caption span{color:var(--muted);font-size:16px}
+main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:14px}
+.col{display:flex;flex-direction:column;gap:10px;min-height:0}
+.layers{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.layer{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 12px 5px 6px}
+.layer.off{color:var(--muted)}
+.dot{width:22px;height:22px;border-radius:50%;background:var(--line)}
+.layer.on .dot{background:var(--basil)}
+.sw{width:40px;height:22px;border-radius:999px;border:0;background:var(--line);position:relative;cursor:pointer;padding:0}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .2s}
+.sw[aria-checked="true"]{background:var(--basil)}
+.sw[aria-checked="true"]::after{left:21px}
+.sw:disabled{cursor:default;opacity:.5}
+.browser{flex:1;min-height:0;background:#fff;border:2px solid var(--ink);border-radius:14px;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.bar{display:flex;align-items:center;gap:6px;padding:8px 12px;border-bottom:2px solid var(--ink);background:var(--bg)}
+.bar i{width:10px;height:10px;border-radius:50%;background:var(--line);border:1px solid var(--muted)}
+.bar code{margin-left:10px;font:400 13px var(--mono);color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:999px;padding:3px 12px;flex:1}
+.view{flex:1;overflow:auto}
+
+/* ---- the pizza page, with no CSS: browser defaults ---- */
+#shop{font-family:"Times New Roman",Times,serif;font-size:17px;padding:10px;color:#000;transition:background .5s,padding .5s}
+#shop h1{font-size:2em;margin:.5em 0}
+#shop h2{font-size:1.4em;margin:.7em 0 .4em}
+#shop *{transition:background-color .5s,color .5s,border-radius .5s,padding .5s,border-color .5s}
+#shop .hot{outline:3px solid var(--violet);outline-offset:2px}
+#chart{display:block;width:100%;max-width:520px;height:auto;margin-top:6px}
+#chart rect{fill:#555;transition:fill .4s}
+#chart rect.enter{fill:var(--basil)}
+#chart rect.update{fill:var(--violet)}
+#chart rect.exit{fill:none;stroke:var(--exit);stroke-width:2;stroke-dasharray:5 4}
+#chart rect.hot{stroke:var(--violet);stroke-width:3}
+#chart text{font:15px "Times New Roman",serif;fill:#000}
+/* ---- the same page with CSS switched on ---- */
+.css #shop{font-family:var(--body);background:#FFF7EA;padding:20px 24px;color:var(--ink);min-height:100%}
+.css #shop h1{font:700 40px/1 var(--display);color:var(--tomato);margin:0}
+.css #shop .tagline{color:var(--muted);margin:4px 0 14px}
+.css #shop ul{list-style:none;padding:0;margin:0 0 12px;display:grid;gap:8px}
+.css #shop li{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #F0DCC0;border-radius:12px;padding:9px 12px 9px 16px}
+.css #shop .name{font-weight:600;flex:1}
+.css #shop .price{font-variant-numeric:tabular-nums;color:var(--muted)}
+.css #shop button{font:600 15px var(--body);background:var(--tomato);color:#fff;border:0;border-radius:999px;padding:7px 18px;cursor:pointer}
+.css #shop button:active{transform:scale(.95)}
+.css #shop #cart{background:var(--ink);color:#fff;border-radius:12px;padding:11px 16px;font-weight:600;margin:0}
+.css #shop h2{font:700 20px var(--display);margin:16px 0 4px}
+.css #shop #pine{background:#fff;color:var(--ink);border:1px solid var(--ink)}
+@media (min-width:900px){
+.css.wide #shop{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:22px;align-content:start}
+.css.wide #shop h1,.css.wide #shop .tagline{grid-column:1/-1}
+.css.wide #shop #kitchen{grid-column:2;grid-row:3/span 2}
+.css.wide #shop h2{margin-top:0}
+}
+.css #chart rect{fill:var(--tomato)}
+.css #chart rect.enter{fill:var(--basil)}
+.css #chart rect.update{fill:var(--violet)}
+.css #chart rect.exit{fill:none}
+.css #chart text{font:600 14px var(--body);fill:var(--ink)}
+#toast{position:absolute;left:50%;top:50px;transform:translate(-50%,-14px);z-index:3;background:var(--ink);color:#fff;font-weight:600;font-size:15px;padding:10px 18px;border-radius:12px;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;max-width:90%;text-align:center}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+.fly{position:fixed;width:26px;height:26px;border-radius:50%;background:var(--cheese);border:4px solid #C98A2B;box-shadow:inset 6px -3px 0 -2px var(--tomato);z-index:9;pointer-events:none}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;min-height:0}
+.card h2{font:700 13px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0;padding:10px 16px 0;display:flex;gap:10px;align-items:baseline}
+.card h2 em{font-style:normal;text-transform:none;letter-spacing:0;font-weight:500}
+pre{margin:8px 12px 10px;background:var(--code);color:#E7ECF7;font:400 13.5px/1.55 var(--mono);border-radius:10px;padding:10px 14px;overflow-x:auto}
+pre .k{color:#FF9D8A} pre .s{color:#FFD970} pre .c{color:#8E9BB8} pre mark{background:var(--violet);color:#fff;border-radius:4px;padding:0 2px}
+.treecard{flex:1}
+#tree{flex:1;overflow:auto;padding:8px 14px 12px;font:400 13.5px var(--mono)}
+#tree .empty{font:500 15px var(--body);color:var(--muted);padding:18px 4px}
+.row{display:flex;align-items:center;gap:8px;padding:2px 6px;border-radius:7px;cursor:default;white-space:nowrap}
+.row .tag{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:0 7px;font-weight:600}
+.row .txt{color:var(--muted);font-family:var(--body);font-size:14px;overflow:hidden;text-overflow:ellipsis}
+.row .kid{border:1px dashed var(--line);border-radius:6px;padding:0 6px;color:var(--muted);font-size:12px}
+.row.hot{background:#ECE9FF}
+.row.hot .tag{background:var(--violet);border-color:var(--violet);color:#fff}
+.row.enter{animation:pop .5s}
+.row.is-enter .tag{background:var(--basil);border-color:var(--basil);color:#fff}
+.row.flash .tag{background:var(--violet);border-color:var(--violet);color:#fff}
+.row.flash .txt{color:var(--violet);font-weight:600}
+.row.is-exit{opacity:.75}
+.row.is-exit .tag{background:#fff;border:1.5px dashed var(--exit);color:var(--exit)}
+.row.is-exit .txt{color:var(--exit);text-decoration:line-through}
+@keyframes pop{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
+.tally{display:flex;gap:6px;margin-left:auto;padding-right:2px}
+.chip{font:600 13px var(--body);text-transform:none;letter-spacing:0;border-radius:999px;padding:4px 12px;color:#fff;opacity:.3;transition:opacity .3s,transform .3s}
+.chip.live{opacity:1;transform:scale(1.06)}
+.chip.e{background:var(--basil)} .chip.u{background:var(--violet)} .chip.x{background:var(--exit)}
+[hidden]{display:none!important}
+@media (max-width:900px){html,body{height:auto}main{grid-template-columns:minmax(0,1fr)}.browser{min-height:420px}#tree{max-height:360px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <h1>How a web page works</h1>
+  <nav class="steps" id="steps" aria-label="Steps"></nav>
+  <button class="ui" id="back" type="button">Back</button>
+  <button class="ui" id="next" type="button">Next</button>
+  <button class="ui" id="reset" type="button" title="Start the demo again from step 1">Reset</button>
+</header>
+<div class="caption" aria-live="polite"><strong id="cap"></strong><span id="quip"></span></div>
+<main>
+  <div class="col">
+    <div class="layers">
+      <span class="layer on"><span class="dot"></span>HTML</span>
+      <span class="layer" id="l-css"><button class="sw" id="sw-css" role="switch" aria-checked="false" aria-label="CSS" type="button"></button>CSS</span>
+      <span class="layer" id="l-js"><button class="sw" id="sw-js" role="switch" aria-checked="false" aria-label="JavaScript" type="button"></button>JavaScript</span>
+      <span class="layer" id="l-d3"><span class="dot"></span>d3.js</span>
+    </div>
+    <div class="browser">
+      <div class="bar"><i></i><i></i><i></i><code>sliceofpi.example/order</code></div>
+      <div class="view">
+        <div id="shop">
+          <h1>Slice of Pi</h1>
+          <p class="tagline">Fresh pizza, made to order.</p>
+          <ul id="menu"></ul>
+          <p id="cart">Your order: 0 pizzas</p>
+          <section id="kitchen" hidden>
+            <h2>Tonight's orders</h2>
+            <svg id="chart" viewBox="0 0 440 110" role="img" aria-label="Bar chart of tonight's orders by pizza"></svg>
+            <p><button id="pine" type="button">Add Hawaiian to the menu</button></p>
+          </section>
+        </div>
+      </div>
+      <div id="toast" role="status"></div>
+    </div>
+  </div>
+  <div class="col">
+    <div class="card">
+      <h2><span id="codetitle">HTML</span><em id="codenote"></em></h2>
+      <pre id="code"></pre>
+    </div>
+    <div class="card treecard">
+      <h2>The DOM <em>the browser's live copy of the page</em><span class="tally" id="tally" hidden><span class="chip e" id="t-e">Enter 0</span><span class="chip u" id="t-u">Update 0</span><span class="chip x" id="t-x">Exit 0</span></span></h2>
+      <div id="tree"></div>
+    </div>
+  </div>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script>
+(function(){
+var $=function(id){return document.getElementById(id);};
+var root=document.documentElement,shop=$('shop'),menu=$('menu'),cart=$('cart'),tree=$('tree');
+var STEPS=[
+ {name:'HTML',cap:'HTML is the content.',quip:'This is all the content of the page, with no styling yet.'},
+ {name:'DOM',cap:'The browser turns HTML into the DOM, a tree of objects.',quip:'Hover anything on the page to see its object in the tree.'},
+ {name:'CSS',cap:'CSS decides how every object looks.',quip:'The content is the same and only the look has changed. Use the CSS switch to compare.'},
+ {name:'JavaScript',cap:'JavaScript makes things happen.',quip:'Click Add while JavaScript is off. Then switch it on and try again.'},
+ {name:'d3.js',cap:'d3 is JavaScript that keeps a chart in sync with data.',quip:'Every bar is an object in the DOM. Order a pizza and watch the tree.'}
+];
+var CODE=[
+ ['HTML','the file you write',
+  '&lt;<span class="k">h1</span>&gt;Slice of Pi&lt;/<span class="k">h1</span>&gt;\n&lt;<span class="k">p</span>&gt;Fresh pizza, made to order.&lt;/<span class="k">p</span>&gt;\n&lt;<span class="k">ul</span>&gt;\n  &lt;<span class="k">li</span>&gt;Margherita $11 &lt;<span class="k">button</span>&gt;Add&lt;/<span class="k">button</span>&gt;&lt;/<span class="k">li</span>&gt;\n  &lt;<span class="k">li</span>&gt;Pepperoni $13 &lt;<span class="k">button</span>&gt;Add&lt;/<span class="k">button</span>&gt;&lt;/<span class="k">li</span>&gt;\n  &lt;<span class="k">li</span>&gt;Mushroom $12 &lt;<span class="k">button</span>&gt;Add&lt;/<span class="k">button</span>&gt;&lt;/<span class="k">li</span>&gt;\n&lt;/<span class="k">ul</span>&gt;\n&lt;<span class="k">p</span>&gt;Your order: 0 pizzas&lt;/<span class="k">p</span>&gt;'],
+ ['HTML','the browser reads it top to bottom',null],
+ ['CSS','rules that match objects in the DOM',
+  '<span class="k">h1</span>     { color: <span class="s">tomato</span>; font-size: <span class="s">40px</span>; }\n<span class="k">li</span>     { background: <span class="s">white</span>;\n         border-radius: <span class="s">12px</span>; }\n<span class="k">button</span> { background: <span class="s">tomato</span>;\n         color: <span class="s">white</span>; }\n<span class="k">#cart</span>  { background: <span class="s">navy</span>; color: <span class="s">white</span>; }\n<span class="c">/* the HTML itself has not changed */</span>'],
+ ['JavaScript','what should happen on a click',
+  '<span class="k">button</span>.onclick = () =&gt; {\n  order.push(pizza);\n  <span id="hl">cart.textContent =\n    <span class="s">"Your order: "</span> + order.length + <span class="s">" pizzas"</span>;</span>\n};\n<span class="c">// one line changes one object in the DOM.\n// the browser redraws the page for free.</span>'],
+ ['d3.js','this code draws the chart on the page',
+  'd3.select(<span class="s">"#chart"</span>)\n  .selectAll(<span class="s">"rect"</span>)\n  .data(tonight, d =&gt; d.name)   <span class="c">// one bar per pizza</span>\n  .join(<span class="s">"rect"</span>)                 <span class="c">// enter, update, exit</span>\n  .attr(<span class="s">"width"</span>, d =&gt; d.count * 18);\n<span class="c">// new pizza: a rect enters. more orders: it updates.\n// pizza removed: its rect exits.</span>']
+];
+CODE[1][2]=CODE[0][2];
+var PIZZAS=[{name:'Margherita',price:11},{name:'Pepperoni',price:13},{name:'Mushroom',price:12}];
+var PINE={name:'Hawaiian',price:14};
+var tonight=[{name:'Margherita',count:4},{name:'Pepperoni',count:7},{name:'Mushroom',count:2}];
+var order=[],step=1,cssOn=false,jsOn=false,deadClicks=0,hasPine=false;
+var DEAD='Nothing happened. JavaScript is off, so the button has no instructions to follow.';
+
+function addItem(p){
+  var li=document.createElement('li');
+  li.innerHTML='<span class="name"></span> <span class="price"></span> <button type="button">Add</button>';
+  li.firstChild.textContent=p.name; li.children[1].textContent='$'+p.price;
+  li.querySelector('button').addEventListener('click',function(e){clickAdd(p,e.currentTarget);});
+  li._pizza=p; menu.appendChild(li); return li;
+}
+PIZZAS.forEach(addItem);
+
+var toastT;
+function toast(msg){var t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('show');},3600);}
+
+function clickAdd(p,btn){
+  if(!jsOn){toast(step<4?'Nothing happens. This page has no JavaScript yet (that arrives in step 4).':DEAD);return;}
+  order.push(p);
+  fly(btn);
+  var total=order.reduce(function(s,x){return s+x.price;},0);
+  cart.textContent='Your order: '+order.length+(order.length===1?' pizza':' pizzas')+' · $'+total;
+  var hl=$('hl'); if(hl){hl.outerHTML='<mark id="hl">'+hl.innerHTML+'</mark>';setTimeout(function(){var m=$('hl');if(m&&m.tagName==='MARK')m.outerHTML='<span id="hl">'+m.innerHTML+'</span>';},900);}
+  var row=tonight.filter(function(d){return d.name===p.name;})[0]; if(row)row.count++;
+  if(step>=5)draw();
+}
+function fly(btn){
+  if(!btn.animate||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  var a=btn.getBoundingClientRect(),b=cart.getBoundingClientRect(),d=document.createElement('div');
+  d.className='fly';document.body.appendChild(d);
+  var x0=a.left+a.width/2-13,y0=a.top+a.height/2-13,x1=b.left+40,y1=b.top+b.height/2-13;
+  d.animate([{transform:'translate('+x0+'px,'+y0+'px) rotate(0)'},{transform:'translate('+((x0+x1)/2)+'px,'+(Math.min(y0,y1)-60)+'px) rotate(200deg)',offset:.5},{transform:'translate('+x1+'px,'+y1+'px) rotate(400deg) scale(.5)'}],{duration:650,easing:'ease-in-out'}).onfinish=function(){d.remove();};
+}
+
+/* ---------- d3: the chart (a real data join) ---------- */
+var tally={e:0,u:0,x:0},tallyT;
+function draw(){
+  if(!window.d3){$('chart').outerHTML='<p>The chart library did not load. Check the connection and reload.</p>';return;}
+  var svg=d3.select('#chart'),max=d3.max(tonight,function(d){return d.count;})||1,W=Math.min(18,270/max);
+  var y=function(d,i){return i*34+5;};
+  svg.attr('viewBox','0 0 440 '+(tonight.length*34+8));
+  tally={e:0,u:0,x:0};
+  svg.selectAll('rect').data(tonight,function(d){return d.name;}).join(
+    function(enter){tally.e=enter.size();return enter.append('rect').attr('class','enter').attr('x',118).attr('y',y).attr('height',24).attr('rx',5).attr('width',0)
+      .call(function(s){s.transition().duration(600).attr('width',function(d){return d.count*W;});});},
+    function(update){return update.attr('class',function(d){var ch=this._c!==d.count;if(ch)tally.u++;return ch?'update':null;})
+      .call(function(s){s.transition().duration(600).attr('y',y).attr('width',function(d){return d.count*W;});});},
+    function(exit){tally.x=exit.size();exit.attr('class','exit').each(function(){this._gone=true;}).transition().duration(1400).style('opacity',0).remove();}
+  ).each(function(d){this._c=d.count;});
+  svg.selectAll('text.lab').data(tonight,function(d){return d.name;}).join('text').attr('class','lab').attr('x',108).attr('text-anchor','end').attr('y',function(d,i){return y(d,i)+17;}).text(function(d){return d.name;});
+  svg.selectAll('text.num').data(tonight,function(d){return d.name;}).join('text').attr('class','num').attr('y',function(d,i){return y(d,i)+17;}).text(function(d){return d.count;})
+    .transition().duration(600).attr('x',function(d){return 126+d.count*W;});
+  $('t-e').textContent='Enter '+tally.e;$('t-u').textContent='Update '+tally.u;$('t-x').textContent='Exit '+tally.x;
+  ['e','u','x'].forEach(function(k){$('t-'+k).classList.toggle('live',tally[k]>0);});
+  clearTimeout(tallyT);tallyT=setTimeout(function(){d3.selectAll('#chart rect:not(.exit)').attr('class',null);syncTree();},1600);
+}
+$('pine').addEventListener('click',function(){
+  hasPine=!hasPine;
+  if(hasPine){PINE.li=addItem(PINE);tonight.push({name:'Hawaiian',count:1});toast('Hawaiian was added to the menu. A new bar enters the chart.');this.textContent='Remove Hawaiian from the menu';}
+  else{PINE.li.remove();tonight=tonight.filter(function(d){return d.name!=='Hawaiian';});toast('Hawaiian was removed from the menu. Its bar exits the chart.');this.textContent='Add Hawaiian to the menu';}
+  draw();
+});
+
+/* ---------- the DOM tree, read live from the page ---------- */
+var ids=new WeakMap(),nextId=1,rows=new Map(),pending=false,built=false;
+function reveal(r){if(built&&r.scrollIntoView)requestAnimationFrame(function(){r.scrollIntoView({block:'nearest'});});}
+function idOf(el){if(!ids.has(el))ids.set(el,nextId++);return ids.get(el);}
+function clip(s){s=s.replace(/\s+/g,' ').trim();return s.length>34?s.slice(0,33)+'…':s;}
+function collect(){
+  var out=[{el:shop,depth:0,tag:'page',txt:''}];
+  (function walk(el,depth){
+    Array.prototype.forEach.call(el.children,function(c){
+      if(c.hidden)return;
+      var t=c.tagName.toLowerCase(),o={el:c,depth:depth,tag:t,txt:'',kids:null};
+      if(t==='li'){o.txt=c._pizza.name;o.kids=['span','span','button'];out.push(o);return;}
+      if(t==='text')return;
+      if(t==='rect'){var d=c.__data__;o.txt=d?d.name+': '+d.count:'';o.state=c._gone?'exit':c.getAttribute('class');out.push(o);return;}
+      if(t==='ul')o.txt=c.children.length+' pizzas';
+      else if(t==='svg')o.txt='the chart';
+      else if(t==='section')o.txt='';
+      else o.txt=clip(c.textContent);
+      out.push(o);
+      if(t==='ul'||t==='svg'||t==='section')walk(c,depth+1);
+    });
+  })(shop,1);
+  return out;
+}
+function syncTree(){
+  pending=false;
+  if(step<2){tree.innerHTML='<div class="empty">The DOM appears in step 2.</div>';rows.clear();built=false;return;}
+  var em=tree.querySelector('.empty');if(em)em.remove();
+  var list=collect(),seen=new Set(),cursor=tree.firstChild;
+  list.forEach(function(o){
+    var id=idOf(o.el),r=rows.get(id),isNew=!r;
+    if(isNew){r=document.createElement('div');r.className='row enter';r._el=o.el;r.innerHTML='<span class="tag"></span><span class="txt"></span>';rows.set(id,r);
+      setTimeout(function(){r.classList.remove('enter');},600);reveal(r);}
+    seen.add(id);
+    r.style.paddingLeft=(6+o.depth*22)+'px';
+    r.firstChild.textContent=o.tag;
+    var tx=r.children[1];
+    if(tx.textContent!==o.txt){if(!isNew&&tx.textContent){reveal(r);r.classList.add('flash');clearTimeout(r._t);r._t=setTimeout(function(){r.classList.remove('flash');},1500);}tx.textContent=o.txt;}
+    if(o.kids&&r.children.length===2)o.kids.forEach(function(k){var s=document.createElement('span');s.className='kid';s.textContent=k;r.appendChild(s);});
+    r.classList.toggle('is-enter',o.state==='enter');r.classList.toggle('is-exit',o.state==='exit');
+    while(cursor&&cursor._dead)cursor=cursor.nextSibling;
+    if(cursor!==r)tree.insertBefore(r,cursor);else cursor=cursor.nextSibling;
+  });
+  rows.forEach(function(r,id){if(!seen.has(id)){rows.delete(id);r._dead=true;r.remove();}});
+  built=true;
+}
+function queue(){if(!pending){pending=true;requestAnimationFrame(syncTree);}}
+new MutationObserver(queue).observe(shop,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['class','hidden']});
+var SEL='h1,h2,p,li,ul,section,rect,svg';
+function rowFor(el){var t=el.closest?el.closest(SEL):null;return t&&shop.contains(t)?rows.get(idOf(t)):(el===shop?rows.get(idOf(shop)):null);}
+var hotRow=null;
+shop.addEventListener('mouseover',function(e){var r=rowFor(e.target);if(hotRow&&hotRow!==r)hotRow.classList.remove('hot');hotRow=r;if(r){r.classList.add('hot');if(r.scrollIntoView)r.scrollIntoView({block:'nearest'});}});
+shop.addEventListener('mouseleave',function(){if(hotRow)hotRow.classList.remove('hot');hotRow=null;});
+tree.addEventListener('mouseover',function(e){var r=e.target.closest('.row');clearHot();if(r&&r._el&&r._el!==shop)r._el.classList.add('hot');});
+tree.addEventListener('mouseleave',clearHot);
+function clearHot(){Array.prototype.forEach.call(shop.querySelectorAll('.hot'),function(x){x.classList.remove('hot');});}
+
+/* ---------- steps and switches ---------- */
+function setSwitch(id,on,enabled){var b=$('sw-'+id);b.setAttribute('aria-checked',on?'true':'false');b.disabled=!enabled;$('l-'+id).classList.toggle('off',!on);}
+function paint(){
+  root.classList.toggle('css',cssOn);root.classList.toggle('wide',step>=5);
+  setSwitch('css',cssOn,step>=3);setSwitch('js',jsOn,step>=4);
+  $('l-d3').className='layer '+(step>=5?'on':'off');
+}
+function go(n){
+  step=Math.max(1,Math.min(5,n));
+  cssOn=step>=3;jsOn=step>=5;deadClicks=0;
+  var s=STEPS[step-1],c=CODE[step-1];
+  $('cap').textContent=step+'. '+s.cap;$('quip').textContent=s.quip;
+  $('codetitle').textContent=c[0];$('codenote').textContent=c[1];$('code').innerHTML=c[2];
+  Array.prototype.forEach.call($('steps').children,function(b,i){b.className='step'+(i+1===step?' on':i+1<step?' done':'');b.setAttribute('aria-current',i+1===step?'step':'false');});
+  $('back').disabled=step===1;$('next').disabled=step===5;
+  $('kitchen').hidden=step<5;$('tally').hidden=step<5;
+  paint();
+  if(step>=5)draw();
+  syncTree();
+}
+STEPS.forEach(function(s,i){var b=document.createElement('button');b.type='button';b.innerHTML='<b>'+(i+1)+'</b>'+s.name;b.addEventListener('click',function(){go(i+1);});$('steps').appendChild(b);});
+$('back').addEventListener('click',function(){go(step-1);});
+$('next').addEventListener('click',function(){go(step+1);});
+$('sw-css').addEventListener('click',function(){cssOn=!cssOn;paint();});
+$('sw-js').addEventListener('click',function(){jsOn=!jsOn;paint();toast(jsOn?'JavaScript is on. The Add buttons now work.':'JavaScript is off. The Add buttons do nothing.');});
+document.addEventListener('keydown',function(e){
+  if(e.target.closest&&e.target.closest('input,textarea'))return;
+  if(e.key==='ArrowRight'||e.key==='PageDown')go(step+1);
+  else if(e.key==='ArrowLeft'||e.key==='PageUp')go(step-1);
+  else if(e.key>='1'&&e.key<='5')go(+e.key);
+  else if(e.key==='r'||e.key==='R')reset();
+});
+function reset(){
+  order=[];hasPine=false;deadClicks=0;
+  if(PINE.li){PINE.li.remove();PINE.li=null;}
+  tonight=[{name:'Margherita',count:4},{name:'Pepperoni',count:7},{name:'Mushroom',count:2}];
+  cart.textContent='Your order: 0 pizzas';
+  $('pine').textContent='Add Hawaiian to the menu';
+  if(window.d3)d3.select('#chart').selectAll('*').interrupt().remove();
+  $('toast').classList.remove('show');
+  go(1);
+}
+$('reset').addEventListener('click',reset);
+var start=(location.hash.match(/^#step-([1-5])$/)||[])[1];
+go(start?+start:1);
+})();
+</script>
+</body>
+</html>
